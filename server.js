@@ -2,6 +2,7 @@
 const express = require('express');
 const pool = require('./Model/Mysql_Model');
 const app = express();
+const crypto = require("crypto-js")
 
 app.use(express.json());
 
@@ -24,7 +25,7 @@ app.post('/handle', (req, res) => {
             val.ResponseText = rows;
         };
 
-        res.json(val);
+        res.json(JSON.stringify(val));
     });
 });
  
