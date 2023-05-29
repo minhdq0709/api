@@ -2,14 +2,25 @@
 const express = require('express');
 const pool = require('./Model/Mysql_Model');
 const app = express();
-const crypto = require("crypto-js")
-
+const crypto = require('crypto');
+const _privateKey = [
+    "itsasecret123123", "adtechAdmicro123",
+    "VCCorp1234561231", "ADTECHADMIN45612"
+];
 app.use(express.json());
+
+function decryptAES(ciphertext, key) {
+    const decipher = crypto.createDecipheriv('aes-128-ecb', key, '');
+    let decrypted = decipher.update(ciphertext, 'base64', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
 
 app.post('/handle', (req, res) => {
     const data = req.body;
-    
-    pool.query(data.Query, function(err, rows, fields) {
+    let query =  decryptAES(data.Query, _privateKey[data.PublicTokenKey]);
+
+    pool.query(query, function(err, rows, fields) {
         let val = {
             Status: true,
             StatusCode: 200,
@@ -20,12 +31,12 @@ app.post('/handle', (req, res) => {
             console.log("err: ", err);
             val.Status = false;
             val.StatusCode = 400;
-            val.ResponseText = err;
+            val.ResponseText = JSON.stringify(err);
         }else{
-            val.ResponseText = rows;
+            val.ResponseText = JSON.stringify(rows);
         };
 
-        res.json(JSON.stringify(val));
+        res.json(val);
     });
 });
  
